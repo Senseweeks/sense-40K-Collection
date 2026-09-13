@@ -18,12 +18,27 @@ export async function fetchJson(route, options) {
   return { response, payload: await response.json() };
 }
 export async function initialize() {
-  const seeds = await Promise.all(['/PyrrhicWar/campaign-map.json', '/PyrrhicWar/pyrrhicCompendium.JSON', '/Expedition/expeditionmap.json'].map(async name => {
+  const loadOptionalSeed = async (name, fallback) => {
     const response = await fetch(name);
+    if (response.status === 404) {
+      console.warn(`Preview seed is absent: ${name}. That project will show an empty local fixture.`);
+      return fallback;
+    }
     if (!response.ok) throw new Error(`Unable to load ${name}`);
     return response.json();
-  }));
+  };
+  // These files are intentionally ignored in some checkouts. Their absence
+  // must not prevent the independently persisted Hybrid Campaign preview from
+  // starting, while normal seed files retain their original behavior.
+  const seeds = await Promise.all([
+    loadOptionalSeed('/PyrrhicWar/campaign-map.json', { tiles: [] }),
+    loadOptionalSeed('/PyrrhicWar/pyrrhicCompendium.JSON', {}),
+    loadOptionalSeed('/Expedition/expeditionmap.json', { tiles: [] }),
+  ]);
   accounts = createAccountStore(window.localStorage);
+  // Keep faction fixtures explicit and local. Their campaign profiles are
+  // materialised by the Hybrid Campaign preview host after it is available.
+  accounts.seedCampaignTestAccounts();
   const pyrrhicApi = createMockApi(seeds[0], seeds[1], accounts);
   const expeditionApi = createExpeditionApi(seeds[2], accounts);
   api = (account, url, options) => new URL(url).pathname.startsWith('/expedition/')

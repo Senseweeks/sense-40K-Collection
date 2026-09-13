@@ -99,7 +99,30 @@ are not implemented: they return explicit errors. The embedded compendium
 still needs internet access for its existing React CDN scripts.
 
 Run `npm test` to check the simulated access rules and supported API behavior.
-The local server binds only to `127.0.0.1` and does not write campaign source data.
+The local server binds only to `127.0.0.1` and does not write campaign source documents.
+
+## Senseweeks’s Hybrid Campaign Experiment
+
+The **Warhammer Projects** section also includes the integrated Gilded Index
+campaign companion. It is a local-preview integration: it reuses the existing
+browser-local saved accounts, but campaign roles are deliberately separate from
+site permissions. An Admin or Owner assigns a saved account one of the Hybrid
+Campaign roles: Owner GM, GM, Co-GM, Player, or Display.
+
+- A Player receives a one-time local onboarding form for a character name,
+  active supporting faction, and supporting faction/warband name.
+- GM roles open the full campaign command surface. Player and Display roles are
+  restricted by the server projection as well as the visible navigation.
+- **Return to the Tavern** always returns directly to `/projects`.
+- The preview authority persists only its validated campaign snapshot at
+  `HybridCampaign/.campaign-preview-state.json`. That file is ignored by Git
+  and is not a replacement for production authentication or hosting.
+
+The integrated app is served under `/hybrid-campaign/`; campaign art is isolated
+under `/hybrid-campaign/assets/`, and its private server/source files are never
+served statically. A future production deployment must replace the preview actor
+adapter with the website’s authenticated session service rather than treating
+these local roles as security.
 
 Expedition uses the same saved site accounts and compact, collapsible header.
 Its game assignments are separate from Pyrrhic War: open the Expedition map as
