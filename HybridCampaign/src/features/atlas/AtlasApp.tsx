@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { AtlasLocation, PlayerAtlasProjection } from './atlas-types';
 
 type Terminal = { id: string; label: string; note: string };
@@ -38,10 +39,25 @@ const Dossier = ({ location }: { location: AtlasLocation | undefined }) => <arti
   </> : <p>Loading the cleared Tavrellis survey feed…</p>}
 </article>;
 
+type LabelAnchor = 'right' | 'left' | 'above' | 'below';
+type LabelLayout = { anchor: LabelAnchor; x: number; y: number };
+type LabelRect = { left: number; top: number; right: number; bottom: number };
+
+const labelsOverlap = (first: LabelRect, second: LabelRect) =>
+  first.left < second.right + 4 && first.right + 4 > second.left && first.top < second.bottom + 4 && first.bottom + 4 > second.top;
+
+const sameLayouts = (first: Record<string, LabelLayout>, second: Record<string, LabelLayout>) => {
+  const firstIds = Object.keys(first);
+  return firstIds.length === Object.keys(second).length && firstIds.every(id => first[id]?.anchor === second[id]?.anchor && first[id]?.x === second[id]?.x && first[id]?.y === second[id]?.y);
+};
+
 export default function AtlasApp({ accountKey }: { accountKey: string }) {
   const [deck, setDeck] = useState<PlayerAtlasProjection>();
   const [selectedId, setSelectedId] = useState('');
   const [error, setError] = useState('');
+  const [labelLayouts, setLabelLayouts] = useState<Record<string, LabelLayout>>({});
+  const mapRef = useRef<HTMLDivElement>(null);
+  const labelRefs = useRef(new Map<string, HTMLSpanElement>());
   useEffect(() => {
     let active = true;
     void fetch('/hybrid-campaign/api/atlas', { cache: 'no-store', headers: { Accept: 'application/json', 'X-Preview-Campaign-Role': 'player', 'X-Preview-Campaign-Account': accountKey } })
@@ -50,6 +66,73 @@ export default function AtlasApp({ accountKey }: { accountKey: string }) {
       .catch(problem => { if (active) setError(problem instanceof Error ? problem.message : 'The command deck is unavailable.'); });
     return () => { active = false; };
   }, [accountKey]);
+
+  useLayoutEffect(() => {
+    const map = mapRef.current;
+    if (!map || !deck?.locations.length) return;
+    const arrangeLabels = () => {
+      const width = map.clientWidth;
+      const height = map.clientHeight;
+      if (!width || !height) return;
+      const placed: LabelRect[] = [];
+      const next: Record<string, LabelLayout> = {};
+      const orderedLocations = [...deck.locations].sort((first, second) => {
+        const firstDensity = deck.locations.filter(location => Math.abs(location.mapPosition.x - first.mapPosition.x) < 15 && Math.abs(location.mapPosition.y - first.mapPosition.y) < 13).length;
+        const secondDensity = deck.locations.filter(location => Math.abs(location.mapPosition.x - second.mapPosition.x) < 15 && Math.abs(location.mapPosition.y - second.mapPosition.y) < 13).length;
+        return secondDensity - firstDensity || first.mapPosition.y - second.mapPosition.y || first.mapPosition.x - second.mapPosition.x;
+      });
+      for (const location of orderedLocations) {
+        const label = labelRefs.current.get(location.id);
+        if (!label) continue;
+        const labelWidth = label.offsetWidth;
+        const labelHeight = label.offsetHeight;
+        const pointX = map.clientLeft + (location.mapPosition.x / 100) * width;
+        const pointY = map.clientTop + (location.mapPosition.y / 100) * height;
+        const preferred: LabelAnchor[] = location.mapPosition.x > 58 ? ['left', 'above', 'below', 'right'] : ['right', 'above', 'below', 'left'];
+        const driftSteps = [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, -8, 8, -9, 9, -10, 10];
+        let chosen: { layout: LabelLayout; rect: LabelRect } | undefined;
+        for (const anchor of preferred) {
+          for (const drift of driftSteps) {
+            const x = anchor === 'right' ? 0 : anchor === 'left' ? 0 : drift * Math.max(28, Math.round(labelWidth * .7));
+            const y = anchor === 'above' || anchor === 'below' ? 0 : drift * (labelHeight + 5);
+            const left = anchor === 'right' ? pointX + 13 : anchor === 'left' ? pointX - 13 - labelWidth : pointX - labelWidth / 2 + x;
+            const top = anchor === 'above' ? pointY - 13 - labelHeight : anchor === 'below' ? pointY + 13 : pointY - labelHeight / 2 + y;
+            const rect = { left, top, right: left + labelWidth, bottom: top + labelHeight };
+            if (rect.left < 6 || rect.top < 6 || rect.right > width - 6 || rect.bottom > height - 6 || placed.some(existing => labelsOverlap(rect, existing))) continue;
+            chosen = { layout: { anchor, x, y }, rect };
+            break;
+          }
+          if (chosen) break;
+        }
+        if (!chosen) {
+          const horizontalStep = Math.max(12, Math.round(labelWidth / 2));
+          const verticalStep = labelHeight + 5;
+          for (let top = 6; top <= height - labelHeight - 6 && !chosen; top += verticalStep) {
+            for (let left = 6; left <= width - labelWidth - 6; left += horizontalStep) {
+              const rect = { left, top, right: left + labelWidth, bottom: top + labelHeight };
+              if (placed.some(existing => labelsOverlap(rect, existing))) continue;
+              chosen = {
+                layout: { anchor: 'below', x: left - (pointX - labelWidth / 2), y: top - (pointY + 13) },
+                rect,
+              };
+              break;
+            }
+          }
+        }
+        if (chosen) {
+          next[location.id] = chosen.layout;
+          placed.push(chosen.rect);
+        }
+      }
+      setLabelLayouts(current => sameLayouts(current, next) ? current : next);
+    };
+    arrangeLabels();
+    const observer = new ResizeObserver(arrangeLabels);
+    observer.observe(map);
+    labelRefs.current.forEach(label => observer.observe(label));
+    window.addEventListener('resize', arrangeLabels);
+    return () => { observer.disconnect(); window.removeEventListener('resize', arrangeLabels); };
+  }, [deck?.locations]);
 
   const selected = deck?.locations.find(location => location.id === selectedId) ?? deck?.locations[0];
   const partyLocation = deck?.locations.find(location => location.id === deck.partyLocationId);
@@ -69,10 +152,14 @@ export default function AtlasApp({ accountKey }: { accountKey: string }) {
     <section className="atlas-system-panel" aria-label="Interactive Tavrellis system map">
       <div className="atlas-screen-heading"><span>Hololithic system survey · Tavrellis</span><span className="atlas-map-date"><small>Campaign date</small><b>{deck?.campaignDate ?? 'Acquiring chronometer data'}</b></span><span>Clearance: Cell public</span></div>
       <p className="atlas-selection-announcement" aria-live="polite">{selected ? `${selected.title} selected.` : 'No location selected.'}</p>
-      <div className="atlas-holomap"><div className="atlas-map">
+      <div className="atlas-holomap"><div className="atlas-map" ref={mapRef}>
         <img src="/hybrid-campaign/assets/world-atlas/tavrellis-system-unlabelled-map.png" alt="Tavrellis system holomap"/>
         {partyLocation ? <span className="atlas-party-marker" role="img" aria-label={`Current Cell position: ${partyLocation.title}`} style={{ left: `${partyLocation.mapPosition.x}%`, top: `${partyLocation.mapPosition.y}%` }}><span>⌖</span></span> : <span className="atlas-party-marker-note">POSITION // AWAITING PUBLIC ASSIGNMENT</span>}
-        {deck?.locations.map(location => <button className={`atlas-pin ${location.mapPosition.x > 79 ? 'atlas-pin-right-edge' : ''}`} type="button" key={location.id} data-location-id={location.id} aria-label={`View ${location.title}`} aria-pressed={selected?.id === location.id} title={location.title} style={{ left: `${location.mapPosition.x}%`, top: `${location.mapPosition.y}%` }} onClick={() => setSelectedId(location.id)}><span className="atlas-pin-dot" aria-hidden="true"/><span className="atlas-pin-label" aria-hidden="true">{location.mapLabel}</span></button>)}
+        {deck?.locations.map(location => {
+          const labelLayout = labelLayouts[location.id] ?? { anchor: 'right' as const, x: 0, y: 0 };
+          const labelStyle = { '--atlas-label-offset-x': `${labelLayout.x}px`, '--atlas-label-offset-y': `${labelLayout.y}px` } as CSSProperties;
+          return <button className="atlas-pin" type="button" key={location.id} data-location-id={location.id} aria-label={`View ${location.title}`} aria-pressed={selected?.id === location.id} title={location.title} style={{ left: `${location.mapPosition.x}%`, top: `${location.mapPosition.y}%` }} onClick={() => setSelectedId(location.id)}><span className="atlas-pin-dot" aria-hidden="true"/><span ref={element => { if (element) labelRefs.current.set(location.id, element); else labelRefs.current.delete(location.id); }} className={`atlas-pin-label atlas-pin-label-${labelLayout.anchor}`} style={labelStyle} aria-hidden="true">{location.mapLabel}</span></button>;
+        })}
       </div><div className="atlas-holotable-plinth" aria-hidden="true"><span className="atlas-holotable-support"/><span className="atlas-holotable-support"/></div><span className="atlas-tracked-body" aria-hidden="true">{selected ? `TRACKED BODY // ${selected.mapLabel.toUpperCase()}` : 'TRACKED BODIES // ACQUIRING'}</span></div>
     </section>
     <aside className="atlas-quick" aria-labelledby="atlas-terminal-title"><Dossier location={selected}/><p className="eyebrow">Sanctioned command terminal</p><h2 id="atlas-terminal-title">Requisition & records</h2>{lowerTerminals.map(terminal => <TerminalControl terminal={terminal} key={terminal.id}/>)}</aside>
