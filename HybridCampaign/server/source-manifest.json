@@ -1,4 +1,0 @@
-[
-  { "title": "The Gilded Index Catalogue", "vaultPath": "11 Random Tables/Gilded Index Visualizer/src/data/catalogue.json", "tags": ["gilded-index", "catalogue", "market"], "status": "current-implementation", "authority": "Campaign implementation", "excerpt": "The implementation catalogue for the Gilded Index market." },
-  { "title": "Campaign Governance Register", "vaultPath": "11 Random Tables/Gilded Index Visualizer/docs/CAMPAIGN_GOVERNANCE_REGISTER.md", "tags": ["governance", "calendar", "roles"], "status": "active-canonical", "authority": "Campaign governance", "excerpt": "Canonical campaign calendar, role, source-policy and Honour-freeze register." }
-]

@@ -27,17 +27,15 @@ export async function initialize() {
     if (!response.ok) throw new Error(`Unable to load ${name}`);
     return response.json();
   };
-  // These files are intentionally ignored in some checkouts. Their absence
-  // must not prevent the independently persisted Hybrid Campaign preview from
-  // starting, while normal seed files retain their original behavior.
+  // These ignored local data files are absent in this checkout. Their absence
+  // must not prevent the protected original preview projects from starting.
   const seeds = await Promise.all([
     loadOptionalSeed('/PyrrhicWar/campaign-map.json', { tiles: [] }),
     loadOptionalSeed('/PyrrhicWar/pyrrhicCompendium.JSON', {}),
     loadOptionalSeed('/Expedition/expeditionmap.json', { tiles: [] }),
   ]);
   accounts = createAccountStore(window.localStorage);
-  // Keep faction fixtures explicit and local. Their campaign profiles are
-  // materialised by the Hybrid Campaign preview host after it is available.
+  // Atlas test accounts are explicitly local and are materialised by its host.
   accounts.seedCampaignTestAccounts();
   const pyrrhicApi = createMockApi(seeds[0], seeds[1], accounts);
   const expeditionApi = createExpeditionApi(seeds[2], accounts);

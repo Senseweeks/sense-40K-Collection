@@ -7,9 +7,9 @@ import { build } from 'esbuild';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const types = { '.html': 'text/html', '.mjs': 'text/javascript', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.wasm': 'application/wasm' };
 const port = Number(process.env.PORT || 5173);
-const hybridModule = await import('../HybridCampaign/server/preview-host.ts');
-const { createHybridCampaignPreviewHost } = hybridModule.default ?? hybridModule;
-const hybridCampaign = await createHybridCampaignPreviewHost(root);
+const atlasModule = await import('../HybridCampaign/server/atlas-preview-host.ts');
+const { createAtlasPreviewHost } = atlasModule.default ?? atlasModule;
+const hybridCampaign = await createAtlasPreviewHost(root);
 const bundle = await build({
   entryPoints: [path.join(root, 'preview/app.jsx')], bundle: true, write: false,
   format: 'esm', jsx: 'automatic',

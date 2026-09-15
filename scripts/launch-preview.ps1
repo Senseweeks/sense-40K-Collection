@@ -10,7 +10,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Preview prerequisites are missing. See the message above.' }
     $npmCommand = Get-PreviewNpmCommand
     if (-not $npmCommand) { throw 'Install Node.js 20 or newer (including npm), then reopen your terminal.' }
-    foreach ($dependency in @('react', 'react-dom', 'react-router-dom', 'esbuild', 'tsx', 'lucide-react', 'pg')) {
+    foreach ($dependency in @('react', 'react-dom', 'react-router-dom', 'esbuild', 'tsx')) {
         if (-not (Test-Path -LiteralPath "node_modules/$dependency/package.json")) {
             throw 'Preview dependencies are missing. Run scripts/install-preview.ps1 first.'
         }

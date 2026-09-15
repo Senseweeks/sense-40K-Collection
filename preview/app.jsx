@@ -17,7 +17,7 @@ function ProjectPicker() {
     <section className="project-section" aria-labelledby="warhammer-projects-title"><p className="project-kicker">Warhammer Projects</p><h2 id="warhammer-projects-title">Campaign workspaces</h2><div className="project-choices">
       <Link className="project-choice" to="/projects/PyrrhicWar"><strong>Pyrrhic War</strong><span>Campaign board &amp; compendium</span></Link>
       <Link className="project-choice" to="/projects/Expedition"><strong>Expedition</strong><span>Expedition map</span></Link>
-      <Link className="project-choice project-choice-featured" to="/projects/HybridCampaign"><strong>Senseweeks’s Hybrid Campaign Experiment</strong><span>Gilded Index, Tavrellis, operations, and force command</span></Link>
+      <Link className="project-choice project-choice-featured" to="/projects/HybridCampaign#/atlas"><strong>Senseweeks’s Hybrid Campaign Experiment</strong><span>Tavrellis player command deck</span></Link>
     </div></section>
   </main>;
 }
