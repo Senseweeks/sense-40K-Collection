@@ -67,10 +67,17 @@ test('Hybrid Campaign onboarding is account-bound, player-safe, and persistent',
 
     const worldResponse = await call('/hybrid-campaign/api/campaign/world', { headers: player });
     const world = await worldResponse.json();
+    assert.deepEqual(world.currentDate, { year: 412, era: 'M42', month: 7, day: 5, imperialOrigin: '5 512 412.M42' });
+    assert.equal(world.playerName, 'Integration Player');
+    assert.equal(world.indexOperating, false, 'the Index terminal is absent when no active visit is operating');
+    assert.equal(world.partyLocationId, undefined, 'the Atlas does not invent a party position without a completed public journey');
+    assert.equal(world.locations.length, 16, 'the player Atlas retains all sixteen published system bodies');
     const eonope = world.locations.find(location => location.id === 'location-eonope');
     assert.deepEqual(eonope.mapPosition, { x: 70.5, y: 13.5 });
     assert.equal('gmSecrets' in eonope, false);
     assert.equal('sourceReferences' in eonope, false);
+    assert.equal('contacts' in eonope, false);
+    assert.equal(world.pressures.every(pressure => 'gmNotes' in pressure === false), true);
 
     const forged = await call('/hybrid-campaign/api/campaign/projection', { headers: { 'X-Trusted-Local-Role': 'owner-gm' } });
     assert.equal(forged.status, 400);
