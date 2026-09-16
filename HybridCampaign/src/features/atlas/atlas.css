@@ -19,14 +19,15 @@
 .atlas-pin,.atlas-pin-right-edge{display:block;width:13px;height:13px;transform:translate(-50%,-50%)}
 .atlas-pin-dot{display:block}
 .atlas-pin-label{position:absolute;z-index:1;white-space:nowrap}
-.atlas-pin-label-right{left:calc(100% + 6px);top:50%;transform:translate(var(--atlas-label-offset-x),calc(-50% + var(--atlas-label-offset-y)))}
-.atlas-pin-label-left{right:calc(100% + 6px);top:50%;transform:translate(calc(-1 * var(--atlas-label-offset-x)),calc(-50% + var(--atlas-label-offset-y)))}
-.atlas-pin-label-above{left:50%;bottom:calc(100% + 6px);transform:translate(calc(-50% + var(--atlas-label-offset-x)),calc(-1 * var(--atlas-label-offset-y)))}
-.atlas-pin-label-below{left:50%;top:calc(100% + 6px);transform:translate(calc(-50% + var(--atlas-label-offset-x)),var(--atlas-label-offset-y))}
-.atlas-pin[data-location-id] .atlas-pin-label-right{left:calc(100% + 6px);right:auto;top:50%;bottom:auto;transform:translate(var(--atlas-label-offset-x),calc(-50% + var(--atlas-label-offset-y)))}
-.atlas-pin[data-location-id] .atlas-pin-label-left{left:auto;right:calc(100% + 6px);top:50%;bottom:auto;transform:translate(calc(-1 * var(--atlas-label-offset-x)),calc(-50% + var(--atlas-label-offset-y)))}
-.atlas-pin[data-location-id] .atlas-pin-label-above{left:50%;right:auto;top:auto;bottom:calc(100% + 6px);transform:translate(calc(-50% + var(--atlas-label-offset-x)),calc(-1 * var(--atlas-label-offset-y)))}
-.atlas-pin[data-location-id] .atlas-pin-label-below{left:50%;right:auto;top:calc(100% + 6px);bottom:auto;transform:translate(calc(-50% + var(--atlas-label-offset-x)),var(--atlas-label-offset-y))}
+.atlas-pin-lead{position:absolute;z-index:0;left:50%;top:50%;width:var(--atlas-lead-length);height:2px;pointer-events:none;background:linear-gradient(90deg,rgba(72,211,124,.22),#a5ffc0 58%,rgba(72,211,124,.22));box-shadow:0 0 7px rgba(93,242,147,.85);transform:rotate(var(--atlas-lead-angle));transform-origin:left center}
+.atlas-pin-label-right{left:calc(100% + 10px);top:50%;transform:translate(var(--atlas-label-offset-x),calc(-50% + var(--atlas-label-offset-y)))}
+.atlas-pin-label-left{right:calc(100% + 10px);top:50%;transform:translate(calc(-1 * var(--atlas-label-offset-x)),calc(-50% + var(--atlas-label-offset-y)))}
+.atlas-pin-label-above{left:50%;bottom:calc(100% + 10px);transform:translate(calc(-50% + var(--atlas-label-offset-x)),calc(-1 * var(--atlas-label-offset-y)))}
+.atlas-pin-label-below{left:50%;top:calc(100% + 10px);transform:translate(calc(-50% + var(--atlas-label-offset-x)),var(--atlas-label-offset-y))}
+.atlas-pin[data-location-id] .atlas-pin-label-right{left:calc(100% + 10px);right:auto;top:50%;bottom:auto;transform:translate(var(--atlas-label-offset-x),calc(-50% + var(--atlas-label-offset-y)))}
+.atlas-pin[data-location-id] .atlas-pin-label-left{left:auto;right:calc(100% + 10px);top:50%;bottom:auto;transform:translate(calc(-1 * var(--atlas-label-offset-x)),calc(-50% + var(--atlas-label-offset-y)))}
+.atlas-pin[data-location-id] .atlas-pin-label-above{left:50%;right:auto;top:auto;bottom:calc(100% + 10px);transform:translate(calc(-50% + var(--atlas-label-offset-x)),calc(-1 * var(--atlas-label-offset-y)))}
+.atlas-pin[data-location-id] .atlas-pin-label-below{left:50%;right:auto;top:calc(100% + 10px);bottom:auto;transform:translate(calc(-50% + var(--atlas-label-offset-x)),var(--atlas-label-offset-y))}
 @media(max-width:720px){.atlas-pin[data-location-id] .atlas-pin-label{font-size:.5rem;padding:2px}.atlas-pin[data-location-id] .atlas-pin-label-right{transform:translate(var(--atlas-label-offset-x),calc(-50% + var(--atlas-label-offset-y)))}.atlas-pin[data-location-id] .atlas-pin-label-left{transform:translate(calc(-1 * var(--atlas-label-offset-x)),calc(-50% + var(--atlas-label-offset-y)))}.atlas-pin[data-location-id] .atlas-pin-label-above{transform:translate(calc(-50% + var(--atlas-label-offset-x)),calc(-1 * var(--atlas-label-offset-y)))}.atlas-pin[data-location-id] .atlas-pin-label-below{transform:translate(calc(-50% + var(--atlas-label-offset-x)),var(--atlas-label-offset-y))}}
 /* The targeting dossier is an inset screen, so it receives the same phosphor layer as its outer terminal. */
 .atlas-side-dossier{background:repeating-linear-gradient(0deg,rgba(76,231,132,.08) 0 1px,transparent 1px 4px),linear-gradient(90deg,rgba(63,214,120,.12) 1px,transparent 1px),linear-gradient(rgba(63,214,120,.1) 1px,transparent 1px),linear-gradient(150deg,rgba(56,31,23,.97),rgba(7,16,17,.99) 58%);background-size:auto,14.285% 100%,100% 18%,100% 100%}
